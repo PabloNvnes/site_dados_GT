@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Libera CORS para testes locais
+# CORS para permitir requisições do frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,15 +15,18 @@ app.add_middleware(
 def home():
     return {"mensagem": "API ativa!"}
 
-@app.post("/avaliar")
-def avaliar(codigo: str = Form(...)):
-    try:
-        # Código de teste simples
-        exec_globals = {}
-        exec(codigo, exec_globals)
-        if 'soma' in exec_globals and exec_globals['soma'](2, 3) == 5:
-            return {"resultado": "passou"}
+@app.get("/pergunta")
+def fazer_pergunta():
+    return {
+        "pergunta": "Quanto é 2 + 2?",
+        "id": "pergunta1"  # ID da pergunta (para expandir no futuro)
+    }
+
+@app.post("/responder")
+def responder_pergunta(resposta: str = Form(...), id: str = Form(...)):
+    if id == "pergunta1":
+        if resposta.strip() in ["4", "quatro", "Quatro"]:
+            return {"correto": True, "mensagem": "Resposta correta!"}
         else:
-            return {"resultado": "falhou"}
-    except Exception as e:
-        return {"erro": str(e)}
+            return {"correto": False, "mensagem": "Resposta errada. Tente novamente."}
+    return {"erro": "Pergunta não reconhecida"}

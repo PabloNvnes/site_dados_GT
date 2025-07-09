@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Desafio de Lógica</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      max-width: 600px;
+    }
+    input, button {
+      padding: 8px;
+      font-size: 16px;
+    }
+    #feedback {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Responda a Pergunta</h1>
+  <p id="pergunta">Carregando pergunta...</p>
+
+  <form id="formulario">
+    <input type="text" name="resposta" id="resposta" placeholder="Digite sua resposta" required />
+    <input type="hidden" name="id" id="idPergunta" />
+    <button type="submit">Enviar</button>
+  </form>
+
+  <div id="feedback"></div>
+
+  <script>
+    const perguntaURL = "https://site-dados-gt.onrender.com/pergunta";
+    const respostaURL = "https://site-dados-gt.onrender.com/responder";
+
+    async function carregarPergunta() {
+      const resp = await fetch(perguntaURL);
+      const data = await resp.json();
+      document.getElementById("pergunta").innerText = data.pergunta;
+      document.getElementById("idPergunta").value = data.id;
+    }
+
+    document.getElementById("formulario").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+
+      const resp = await fetch(respostaURL, {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await resp.json();
+      const feedback = document.getElementById("feedback");
+      if (data.correto) {
+        feedback.textContent = "✅ " + data.mensagem;
+        feedback.style.color = "green";
+      } else {
+        feedback.textContent = "❌ " + (data.mensagem || "Resposta incorreta");
+        feedback.style.color = "red";
+      }
+    });
+
+    carregarPergunta();
+  </script>
+</body>
+</html>
