@@ -1,32 +1,38 @@
+# Arquivo: main.py
 from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# CORS para permitir requisições do frontend
+# A linha abaixo é CRUCIAL para permitir que seu site (frontend) 
+# consiga fazer requisições para sua API (backend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=["*"],  # Permite todas as origens (para simplificar)
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos os métodos (GET, POST, etc)
     allow_headers=["*"],
 )
 
-@app.get("/")
-def home():
-    return {"mensagem": "API ativa!"}
-
+# Endpoint que ENVIA a pergunta para o frontend
 @app.get("/pergunta")
 def fazer_pergunta():
     return {
-        "pergunta": "Quanto é 2 + 2?",
-        "id": "pergunta1"  # ID da pergunta (para expandir no futuro)
+        "id_pergunta": "desafio_soma_simples",
+        "enunciado": "Quanto é 2 + 2?"
     }
 
+# Endpoint que RECEBE a resposta do frontend e a corrige
 @app.post("/responder")
-def responder_pergunta(resposta: str = Form(...), id: str = Form(...)):
-    if id == "pergunta1":
-        if resposta.strip() in ["4", "quatro", "Quatro"]:
-            return {"correto": True, "mensagem": "Resposta correta!"}
+def receber_resposta(id_pergunta: str = Form(...), resposta_usuario: str = Form(...)):
+    gabarito = {
+        "desafio_soma_simples": "4"
+    }
+
+    if id_pergunta in gabarito:
+        if resposta_usuario.strip() == gabarito[id_pergunta]:
+            return {"correto": True, "feedback": "Parabéns, resposta correta!"}
         else:
-            return {"correto": False, "mensagem": "Resposta errada. Tente novamente."}
-    return {"erro": "Pergunta não reconhecida"}
+            return {"correto": False, "feedback": "Resposta errada. Tente novamente."}
+    
+    return {"correto": False, "feedback": "Erro: Desafio não encontrado."}
